@@ -31,7 +31,7 @@ font-family:Arial, sans-serif;
 max-width:520px;
 margin:auto;
 padding:18px;
-padding-bottom:80px;
+padding-bottom:100px;
 }
 
 .logo{
@@ -89,6 +89,35 @@ transition:0.2s;
 background:#dbeafe;
 }
 
+.protocolButton{
+background:#dc2626;
+color:white;
+padding:18px;
+border-radius:18px;
+margin-top:14px;
+font-weight:900;
+font-size:18px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:10px;
+cursor:pointer;
+box-shadow:0 4px 14px rgba(220,38,38,0.3);
+}
+
+.protocolIcon{
+width:28px;
+height:28px;
+background:white;
+border-radius:999px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#dc2626;
+font-size:20px;
+font-weight:900;
+}
+
 .suggestion{
 padding:15px;
 border-bottom:1px solid #eee;
@@ -118,6 +147,24 @@ to{
 opacity:1;
 transform:translateY(0px);
 }
+}
+
+.topButtons{
+display:flex;
+flex-direction:column;
+gap:10px;
+margin-bottom:20px;
+}
+
+.backButton{
+background:#2563eb;
+color:white;
+padding:14px;
+border:none;
+border-radius:16px;
+font-weight:900;
+font-size:16px;
+cursor:pointer;
 }
 
 .medTitle{
@@ -266,11 +313,11 @@ gotasPorMl:20,
 
 doseMgKg:12.5,
 
-regraPratica:"≈ 0,5 gota por kg de peso",
-
 faixaDose:"10–15 mg/kg",
 
-maximo:"40 gotas (1.000 mg) por dose",
+maximo:"20 mL (1.000 mg) por dose",
+
+regraPratica:"≈ 0,5 gota/kg (técnico) ou 1 gota/kg na prática da urgência",
 
 administracao:"Via oral",
 
@@ -291,6 +338,12 @@ via:"EV",
 concentracao:500,
 
 doseMgKg:15,
+
+faixaDose:"10–15 mg/kg",
+
+maximo:"20 mL (1.000 mg) por dose",
+
+regraPratica:"EV lento",
 
 administracao:"EV lento",
 
@@ -399,15 +452,9 @@ const [idadeTipo,setIdadeTipo] = React.useState("");
 
 const [resultado,setResultado] = React.useState(null);
 
-const [alerta,setAlerta] = React.useState("");
-
 const sugestoes = medicamentos.filter(m =>
 m.nome.toLowerCase().includes(busca.toLowerCase())
 );
-
-const cardRef = React.useRef(null);
-
-const resultRef = React.useRef(null);
 
 function selecionarMedicamento(med){
 
@@ -419,13 +466,25 @@ setFormulacao(med.formulacoes[0]);
 
 setResultado(null);
 
-setTimeout(()=>{
-
-cardRef.current?.scrollIntoView({
+window.scrollTo({
+top:0,
 behavior:"smooth"
 });
 
-},200);
+}
+
+function voltarInicio(){
+
+setSelecionado(null);
+
+setBusca("");
+
+setResultado(null);
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 
 }
 
@@ -438,25 +497,6 @@ alert("Preencha peso e idade");
 return;
 }
 
-const idadeMeses = idadeTipo === "anos"
-? idade * 12
-: idade;
-
-if(
-selecionado.idadeMinimaMeses &&
-idadeMeses < selecionado.idadeMinimaMeses
-){
-
-setAlerta(
-`Medicamento recomendado apenas acima de ${selecionado.idadeMinimaMeses} meses`
-);
-
-}else{
-
-setAlerta("");
-
-}
-
 const dose = peso * formulacao.doseMgKg;
 
 const volume = dose / formulacao.concentracao;
@@ -464,12 +504,6 @@ const volume = dose / formulacao.concentracao;
 let gotas = null;
 
 if(formulacao.gotasPorMl){
-
-/*
-CORREÇÃO:
-0,5 gota/kg prática clínica
-10kg = 5 gotas
-*/
 
 gotas = Math.round(peso * 0.5);
 
@@ -483,11 +517,12 @@ gotas
 
 setTimeout(()=>{
 
-resultRef.current?.scrollIntoView({
+window.scrollTo({
+top:document.body.scrollHeight,
 behavior:"smooth"
 });
 
-},250);
+},200);
 
 }
 
@@ -616,6 +651,16 @@ selecionarMedicamento(med);
 ))
 }
 
+<div className="protocolButton">
+
+<div className="protocolIcon">
+✚
+</div>
+
+PROTOCOLOS
+
+</div>
+
 </>
 
 }
@@ -623,10 +668,30 @@ selecionarMedicamento(med);
 {
 selecionado && formulacao &&
 
-<div
-className="card"
-ref={cardRef}
+<div className="card">
+
+<div className="topButtons">
+
+<button
+className="backButton"
+onClick={voltarInicio}
 >
+
+⬅ VOLTAR
+
+</button>
+
+<div className="protocolButton">
+
+<div className="protocolIcon">
+✚
+</div>
+
+PROTOCOLOS
+
+</div>
+
+</div>
 
 <div className="medTitle">
 {selecionado.nome}
@@ -696,13 +761,9 @@ PESO DO PACIENTE
 </div>
 
 <select
-
 className="select"
-
 value={peso}
-
 onChange={(e)=>setPeso(Number(e.target.value))}
-
 >
 
 <option value="">
@@ -731,13 +792,9 @@ IDADE
 </div>
 
 <select
-
 className="select"
-
 value={idade}
-
 onChange={(e)=>setIdade(Number(e.target.value))}
-
 >
 
 <option value="">
@@ -806,11 +863,8 @@ ANOS
 </div>
 
 <button
-
 className="greenButton"
-
 onClick={calcular}
-
 >
 
 CALCULAR DOSE
@@ -822,10 +876,7 @@ resultado &&
 
 <>
 
-<div
-className="resultTop"
-ref={resultRef}
->
+<div className="resultTop">
 
 <div className="resultTopText">
 
@@ -853,25 +904,30 @@ resultado.gotas
 
 </div>
 
-{
-formulacao.regraPratica &&
-
 <div className="blueInfo">
 
-<b>Dose:</b> {formulacao.doseMgKg} mg/kg/dose
-(faixa: {formulacao.faixaDose})
+<b>Dose padrão:</b>
 
 <br/><br/>
 
-<b>Máximo:</b> {formulacao.maximo}
+{formulacao.doseMgKg} mg/kg/dose
 
 <br/><br/>
 
-<b>Regra prática:</b> {formulacao.regraPratica}
+<b>Faixa:</b>
+{formulacao.faixaDose}
+
+<br/><br/>
+
+<b>Máximo:</b>
+{formulacao.maximo}
+
+<br/><br/>
+
+<b>Regra prática:</b>
+{formulacao.regraPratica}
 
 </div>
-
-}
 
 <div className="infoBox">
 
@@ -912,15 +968,6 @@ formulacao.regraPratica &&
 {formulacao.diluicao}
 
 </div>
-
-{
-alerta &&
-
-<div className="redFlag">
-🚨 {alerta}
-</div>
-
-}
 
 <div className="label">
 🚨 RED FLAGS
