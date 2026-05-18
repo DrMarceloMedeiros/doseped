@@ -20,93 +20,189 @@
 <style>
 
 body{
-background:#edf6ff;
-font-family:Arial;
 margin:0;
 padding:0;
+background:#eaf4ff;
+font-family:Arial, sans-serif;
 }
 
-.card{
-background:white;
-padding:20px;
-border-radius:22px;
-margin-top:15px;
-box-shadow:0 4px 15px rgba(0,0,0,0.08);
+.app{
+max-width:520px;
+margin:auto;
+padding:18px;
 }
 
-input,select{
-width:100%;
-padding:14px;
-border-radius:14px;
-border:1px solid #d1d5db;
+.logo{
+font-size:42px;
+font-weight:900;
+color:#2563eb;
 margin-top:10px;
-font-size:16px;
-box-sizing:border-box;
-}
-
-button{
-width:100%;
-background:#2563eb;
-color:white;
-padding:15px;
-border:none;
-border-radius:14px;
-margin-top:15px;
-font-weight:bold;
-font-size:16px;
-cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.title{
-font-size:34px;
-font-weight:bold;
-color:#1e3a8a;
 }
 
 .subtitle{
 color:#64748b;
+font-size:15px;
 margin-top:-5px;
 }
 
+.searchBox{
+background:white;
+border-radius:22px;
+padding:16px;
+margin-top:20px;
+box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.searchInput{
+width:100%;
+padding:16px;
+border-radius:16px;
+border:1px solid #dbeafe;
+font-size:18px;
+outline:none;
+box-sizing:border-box;
+}
+
+.quickTitle{
+font-weight:bold;
+margin-top:20px;
+margin-bottom:12px;
+color:#1e3a8a;
+}
+
+.quickButton{
+background:white;
+padding:15px;
+border-radius:16px;
+margin-bottom:10px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 3px 10px rgba(0,0,0,0.05);
+border:1px solid #dbeafe;
+}
+
+.quickButton:hover{
+background:#dbeafe;
+}
+
 .suggestion{
-padding:14px;
+padding:15px;
 border-bottom:1px solid #eee;
 cursor:pointer;
-background:white;
 }
 
 .suggestion:hover{
 background:#dbeafe;
 }
 
-.section{
-margin-top:16px;
+.card{
+background:white;
+padding:20px;
+border-radius:22px;
+margin-top:20px;
+box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.medTitle{
+font-size:32px;
+font-weight:900;
+color:#111827;
+}
+
+.medCategory{
+color:#2563eb;
+font-weight:bold;
+margin-top:5px;
 }
 
 .label{
 font-weight:bold;
 color:#1d4ed8;
-margin-bottom:5px;
+margin-top:18px;
+margin-bottom:7px;
 }
 
-.result{
-background:#dbeafe;
+.select{
+width:100%;
+padding:15px;
+border-radius:14px;
+border:1px solid #d1d5db;
+font-size:17px;
+margin-top:8px;
+}
+
+.greenButton{
+width:100%;
+padding:18px;
+border:none;
+background:#22c55e;
+border-radius:18px;
+font-size:19px;
+font-weight:900;
+color:black;
+margin-top:30px;
+cursor:pointer;
+}
+
+.greenButton:hover{
+background:#16a34a;
+}
+
+.resultTop{
+background:#2563eb;
+color:white;
+padding:20px;
+border-radius:18px;
+margin-top:25px;
+text-align:center;
+}
+
+.resultTopText{
+font-size:34px;
+font-weight:900;
+}
+
+.resultTopSub{
+font-size:18px;
+margin-top:5px;
+}
+
+.infoBox{
+background:#f8fafc;
 padding:16px;
 border-radius:16px;
-margin-top:15px;
+margin-top:14px;
 }
 
-.redflag{
+.redFlag{
 background:#fee2e2;
-padding:10px;
-border-radius:12px;
+padding:12px;
+border-radius:14px;
 margin-top:10px;
 color:#991b1b;
 font-size:14px;
+}
+
+.ageTypeContainer{
+display:flex;
+gap:10px;
+margin-top:15px;
+}
+
+.ageButton{
+flex:1;
+padding:14px;
+border-radius:14px;
+border:none;
+font-weight:bold;
+cursor:pointer;
+background:#dbeafe;
+color:#1e3a8a;
+}
+
+.ageButton.active{
+background:#2563eb;
+color:white;
 }
 
 </style>
@@ -120,45 +216,6 @@ font-size:14px;
 <script type="text/babel">
 
 const medicamentos = [
-
-{
-nome:"Flumazenil",
-
-categoria:"Antagonista benzodiazepínico",
-
-indicacao:"Intoxicação por benzodiazepínicos",
-
-formulacoes:[
-
-{
-nome:"Ampola EV",
-
-via:"EV",
-
-concentracao:0.1,
-
-doseMgKg:0.01,
-
-administracao:"Endovenoso lento em 15 segundos",
-
-repeticao:"Pode repetir a cada 60 segundos",
-
-doseMaxima:"1 mg total",
-
-apresentacao:"Ampola 5 mL — 0,1 mg/mL",
-
-diluicao:"Sem necessidade de diluição"
-}
-
-],
-
-redFlags:[
-"Uso crônico de benzodiazepínicos",
-"Convulsões",
-"Coingestão com antidepressivos tricíclicos"
-]
-
-},
 
 {
 nome:"Dipirona",
@@ -219,23 +276,113 @@ redFlags:[
 "Agranulocitose rara"
 ]
 
+},
+
+{
+nome:"Flumazenil",
+
+categoria:"Antagonista benzodiazepínico",
+
+indicacao:"Intoxicação por benzodiazepínicos",
+
+formulacoes:[
+
+{
+nome:"Ampola EV",
+
+via:"EV",
+
+concentracao:0.1,
+
+doseMgKg:0.01,
+
+administracao:"Endovenoso lento em 15 segundos",
+
+repeticao:"Pode repetir a cada 60 segundos",
+
+doseMaxima:"1 mg total",
+
+apresentacao:"Ampola 5 mL — 0,1 mg/mL",
+
+diluicao:"Sem necessidade de diluição"
+}
+
+],
+
+redFlags:[
+"Uso crônico de benzodiazepínicos",
+"Convulsões",
+"Coingestão com antidepressivos tricíclicos"
+]
+
 }
 
 ];
 
+const atalhos = [
+"Dipirona",
+"Plasil",
+"Dramin",
+"Dexametasona",
+"Hidrocortisona",
+"Ondansetrona",
+"Adrenalina",
+"Diazepam"
+];
+
 function App(){
 
+const [textoAnimado,setTextoAnimado] = React.useState("");
+
+const frase = "Dipirona";
+
+React.useEffect(()=>{
+
+let i = 0;
+
+let apagando = false;
+
+const interval = setInterval(()=>{
+
+if(!apagando){
+
+setTextoAnimado(frase.substring(0,i+1));
+
+i++;
+
+if(i === frase.length){
+apagando = true;
+}
+
+}else{
+
+setTextoAnimado(frase.substring(0,i-1));
+
+i--;
+
+if(i === 0){
+apagando = false;
+}
+
+}
+
+},180);
+
+return ()=>clearInterval(interval);
+
+},[]);
+
 const [busca,setBusca] = React.useState("");
-
-const [peso,setPeso] = React.useState("");
-
-const [idade,setIdade] = React.useState("");
-
-const [idadeTipo,setIdadeTipo] = React.useState("");
 
 const [selecionado,setSelecionado] = React.useState(null);
 
 const [formulacao,setFormulacao] = React.useState(null);
+
+const [peso,setPeso] = React.useState(10);
+
+const [idade,setIdade] = React.useState(2);
+
+const [idadeTipo,setIdadeTipo] = React.useState("anos");
 
 const [resultado,setResultado] = React.useState(null);
 
@@ -257,24 +404,7 @@ setResultado(null);
 
 function calcular(){
 
-if(!peso){
-alert("Digite o peso");
-return;
-}
-
-if(!idade){
-alert("Digite a idade");
-return;
-}
-
-if(!idadeTipo){
-alert("Selecione meses ou anos");
-return;
-}
-
-const pesoFloat = parseFloat(peso);
-
-const dose = pesoFloat * formulacao.doseMgKg;
+const dose = peso * formulacao.doseMgKg;
 
 const volume = dose / formulacao.concentracao;
 
@@ -298,11 +428,9 @@ gotas
 
 return(
 
-<div className="max-w-xl mx-auto p-4">
+<div className="app">
 
-<div className="card">
-
-<div className="title">
+<div className="logo">
 DosePed
 </div>
 
@@ -310,9 +438,13 @@ DosePed
 Calculadora pediátrica profissional
 </div>
 
+<div className="searchBox">
+
 <input
 
-placeholder="🔎 Pesquisa rápida..."
+className="searchInput"
+
+placeholder={textoAnimado}
 
 value={busca}
 
@@ -330,7 +462,7 @@ setSelecionado(null);
 busca.length > 0 &&
 !selecionado &&
 
-<div className="mt-2 border rounded-xl overflow-hidden">
+<div style={{marginTop:"10px"}}>
 
 {
 sugestoes.map((m,index)=>(
@@ -361,27 +493,56 @@ onClick={()=>selecionarMedicamento(m)}
 </div>
 }
 
+</div>
+
+<div className="quickTitle">
+⚡ Mais usados na urgência
+</div>
+
+{
+atalhos.map((item,index)=>(
+
+<div
+
+key={index}
+
+className="quickButton"
+
+onClick={()=>{
+
+setBusca(item);
+
+const med = medicamentos.find(
+m => m.nome === item
+);
+
+if(med){
+selecionarMedicamento(med);
+}
+
+}}
+
+>
+
+{item}
+
+</div>
+
+))
+}
+
 {
 selecionado && formulacao &&
 
 <div className="card">
 
-<h1 style={{
-fontSize:"30px",
-fontWeight:"bold"
-}}>
+<div className="medTitle">
 {selecionado.nome}
-</h1>
-
-<div style={{
-color:"#2563eb",
-fontWeight:"bold",
-marginTop:"5px"
-}}>
-{selecionado.categoria}
 </div>
 
-<div className="section">
+<div className="medCategory">
+{selecionado.categoria}
+</div>
 
 <div className="label">
 INDICAÇÃO
@@ -391,15 +552,13 @@ INDICAÇÃO
 {selecionado.indicacao}
 </div>
 
-</div>
-
-<div className="section">
-
 <div className="label">
 FORMULAÇÃO
 </div>
 
 <select
+
+className="select"
 
 value={formulacao.nome}
 
@@ -427,10 +586,6 @@ selecionado.formulacoes.map((f,index)=>(
 
 </select>
 
-</div>
-
-<div className="section">
-
 <div className="label">
 APRESENTAÇÃO
 </div>
@@ -439,170 +594,178 @@ APRESENTAÇÃO
 {formulacao.apresentacao}
 </div>
 
+<div className="label">
+PESO
 </div>
-
-<input
-
-type="number"
-
-placeholder="Peso do paciente (kg)"
-
-value={peso}
-
-onChange={(e)=>setPeso(e.target.value)}
-
-/>
-
-<input
-
-type="number"
-
-placeholder="Idade do paciente"
-
-value={idade}
-
-onChange={(e)=>setIdade(e.target.value)}
-
-/>
 
 <select
 
-value={idadeTipo}
+className="select"
 
-onChange={(e)=>setIdadeTipo(e.target.value)}
+value={peso}
+
+onChange={(e)=>setPeso(Number(e.target.value))}
 
 >
 
-<option value="">
-Selecione idade
+{
+Array.from({length:40},(_,i)=>i+1).map(num=>(
+
+<option key={num}>
+{num}
 </option>
 
-<option value="meses">
-Meses
-</option>
-
-<option value="anos">
-Anos
-</option>
+))
+}
 
 </select>
 
-<button onClick={calcular}>
+<div className="label">
+IDADE
+</div>
+
+<select
+
+className="select"
+
+value={idade}
+
+onChange={(e)=>setIdade(Number(e.target.value))}
+
+>
+
+{
+Array.from({length:18},(_,i)=>i+1).map(num=>(
+
+<option key={num}>
+{num}
+</option>
+
+))
+}
+
+</select>
+
+<div className="ageTypeContainer">
+
+<button
+
+className={
+idadeTipo === "meses"
+? "ageButton active"
+: "ageButton"
+}
+
+onClick={()=>setIdadeTipo("meses")}
+
+>
+
+MESES
+
+</button>
+
+<button
+
+className={
+idadeTipo === "anos"
+? "ageButton active"
+: "ageButton"
+}
+
+onClick={()=>setIdadeTipo("anos")}
+
+>
+
+ANOS
+
+</button>
+
+</div>
+
+<button
+
+className="greenButton"
+
+onClick={calcular}
+
+>
+
 CALCULAR DOSE
+
 </button>
 
 {
 resultado &&
 
-<div className="result">
+<>
 
-<div>
+<div className="resultTop">
+
+<div className="resultTopText">
+
+{
+resultado.gotas
+? `${resultado.gotas} GOTAS`
+: `${resultado.volume} mL`
+}
+
+</div>
+
+<div className="resultTopSub">
+{formulacao.via}
+</div>
+
+</div>
+
+<div className="infoBox">
 
 <b>DOSE CALCULADA</b>
 
-<br/>
+<br/><br/>
 
 {resultado.dose} mg
 
 </div>
 
-<br/>
-
-<div>
-
-<b>VOLUME</b>
-
-<br/>
-
-{resultado.volume} mL
-
-</div>
-
-{
-resultado.gotas &&
-
-<>
-
-<br/>
-
-<div>
-
-<b>GOTAS</b>
-
-<br/>
-
-{resultado.gotas} gotas
-
-</div>
-
-</>
-
-}
-
-<br/>
-
-<div>
-
-<b>VIA</b>
-
-<br/>
-
-{formulacao.via}
-
-</div>
-
-<br/>
-
-<div>
+<div className="infoBox">
 
 <b>ADMINISTRAÇÃO</b>
 
-<br/>
+<br/><br/>
 
 {formulacao.administracao}
 
 </div>
 
-<br/>
-
-<div>
+<div className="infoBox">
 
 <b>REPETIÇÃO</b>
 
-<br/>
+<br/><br/>
 
 {formulacao.repeticao}
 
 </div>
 
-<br/>
-
-<div>
+<div className="infoBox">
 
 <b>DOSE MÁXIMA</b>
 
-<br/>
+<br/><br/>
 
 {formulacao.doseMaxima}
 
 </div>
 
-<br/>
-
-<div>
+<div className="infoBox">
 
 <b>DILUIÇÃO</b>
 
-<br/>
+<br/><br/>
 
 {formulacao.diluicao}
 
 </div>
-
-</div>
-}
-
-<div className="section">
 
 <div className="label">
 🚨 RED FLAGS
@@ -613,7 +776,7 @@ selecionado.redFlags.map((r,index)=>(
 
 <div
 key={index}
-className="redflag"
+className="redFlag"
 >
 
 {r}
@@ -623,12 +786,12 @@ className="redflag"
 ))
 }
 
-</div>
+</>
 
-</div>
 }
 
 </div>
+}
 
 </div>
 
