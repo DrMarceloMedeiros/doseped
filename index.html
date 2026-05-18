@@ -7,406 +7,341 @@
 <title>DosePed</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
 body{
-    background:#f4f8fb;
-    font-family:Arial;
+background:#eef6ff;
+font-family:Arial;
 }
 
 .card{
-    transition:0.2s;
+background:white;
+border-radius:20px;
+padding:20px;
+box-shadow:0 4px 15px rgba(0,0,0,0.08);
+margin-top:15px;
 }
 
-.card:hover{
-    transform:scale(1.01);
+input{
+width:100%;
+padding:14px;
+border-radius:14px;
+border:1px solid #cbd5e1;
+margin-top:10px;
+font-size:16px;
 }
 
-.search-item:hover{
-    background:#eff6ff;
+button{
+background:#2563eb;
+color:white;
+padding:14px;
+border-radius:14px;
+width:100%;
+font-weight:bold;
+margin-top:15px;
+}
+
+.suggestion{
+padding:12px;
+background:white;
+border-bottom:1px solid #eee;
+cursor:pointer;
+}
+
+.suggestion:hover{
+background:#dbeafe;
+}
+
+.title{
+font-size:32px;
+font-weight:bold;
+color:#1e3a8a;
+}
+
+.subtitle{
+color:#64748b;
+font-size:14px;
+margin-top:-5px;
+}
+
+.section-title{
+font-weight:bold;
+color:#1e40af;
+margin-top:14px;
+font-size:15px;
+}
+
+.result{
+background:#dbeafe;
+padding:15px;
+border-radius:14px;
+margin-top:15px;
+}
+
+.redflag{
+background:#fee2e2;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+color:#991b1b;
+font-size:14px;
 }
 </style>
 </head>
 
-<body class="min-h-screen">
+<body>
 
-<div class="max-w-3xl mx-auto p-4">
+<div id="root"></div>
 
-<div class="bg-blue-700 text-white p-5 rounded-3xl shadow-xl">
+<script type="text/babel">
 
-<h1 class="text-3xl font-bold">
-DosePed
-</h1>
-
-<p class="mt-2 text-blue-100">
-Emergência Pediátrica e Toxicologia
-</p>
-
-</div>
-
-<div class="mt-5 bg-white rounded-3xl shadow p-4">
-
-<label class="font-bold text-lg">
-🔎 PESQUISA RÁPIDA
-</label>
-
-<input
-id="searchInput"
-type="text"
-placeholder="Digite medicamento, antídoto ou protocolo..."
-class="w-full mt-3 border-2 border-blue-200 rounded-2xl p-4 text-lg outline-none focus:border-blue-500"
-/>
-
-<div
-id="suggestions"
-class="mt-2 rounded-2xl overflow-hidden border border-gray-100"
-></div>
-
-</div>
-
-<div
-id="protocolContainer"
-class="mt-5"
-></div>
-
-</div>
-
-<script>
-
-const database = [
+const medicamentos = [
 
 {
-    id:"naloxona",
-    nome:"Naloxona",
-    aliases:["opioides","opioide","fentanil","morfina"],
-    categoria:"Toxicologia",
-    antidoto:"Reversão opioides",
-    dose:"0,01 mg/kg IV",
-    concentracao:"0,4 mg/mL",
-    redFlags:[
-        "Apneia persistente",
-        "Recidiva após bolus",
-        "Metadona/fentanil"
-    ],
-    protocolo:[
-        "Repetir a cada 2-3 minutos",
-        "Pode necessitar infusão contínua",
-        "Monitorização respiratória contínua"
-    ],
-    calculadora:{
-        tipo:"simples",
-        mgKg:0.01,
-        concentracao:0.4
-    }
+nome:"Flumazenil",
+categoria:"Antagonista benzodiazepínico",
+indicacao:"Intoxicação por benzodiazepínicos",
+doseMgKg:0.01,
+concentracao:0.1,
+administracao:"EV lento em 15 segundos",
+repeticao:"Pode repetir a cada 60 segundos",
+doseMaxima:"1 mg total",
+diluicao:"Sem necessidade de diluição",
+apresentacao:"Ampola 5 mL — 0,1 mg/mL",
+redFlags:[
+"Uso crônico de benzodiazepínicos",
+"Convulsões",
+"Coingestão com antidepressivos tricíclicos"
+]
 },
 
 {
-    id:"flumazenil",
-    nome:"Flumazenil",
-    aliases:["benzodiazepinicos","midazolam","diazepam"],
-    categoria:"Toxicologia",
-    antidoto:"Reversão benzodiazepínicos",
-    dose:"0,01 mg/kg IV",
-    concentracao:"0,1 mg/mL",
-    redFlags:[
-        "Convulsões",
-        "Uso crônico BZD",
-        "Coingestão ATC"
-    ],
-    protocolo:[
-        "Usar apenas em casos selecionados",
-        "Monitorização contínua",
-        "Risco de recidiva"
-    ],
-    calculadora:{
-        tipo:"simples",
-        mgKg:0.01,
-        concentracao:0.1
-    }
-},
-
-{
-    id:"paracetamol",
-    nome:"N-Acetilcisteína (NAC)",
-    aliases:["paracetamol","acetaminofen","nac"],
-    categoria:"Toxicologia",
-    antidoto:"Intoxicação por Paracetamol",
-    dose:"150 mg/kg → 50 mg/kg → 100 mg/kg",
-    concentracao:"200 mg/mL",
-    redFlags:[
-        "INR elevado",
-        "Hipoglicemia",
-        "Encefalopatia"
-    ],
-    protocolo:[
-        "Bolsa 1: 150 mg/kg em 1h",
-        "Bolsa 2: 50 mg/kg em 4h",
-        "Bolsa 3: 100 mg/kg em 16h"
-    ],
-    calculadora:{
-        tipo:"nac",
-        concentracao:200
-    }
+nome:"Naloxona",
+categoria:"Antagonista opioide",
+indicacao:"Intoxicação por opioides",
+doseMgKg:0.01,
+concentracao:0.4,
+administracao:"EV lento",
+repeticao:"Repetir a cada 2-3 minutos",
+doseMaxima:"2 mg por dose",
+diluicao:"Sem necessidade",
+apresentacao:"Ampola 1 mL — 0,4 mg/mL",
+redFlags:[
+"Recidiva respiratória",
+"Opioides longa duração",
+"Abstinência aguda"
+]
 }
 
 ];
 
-const input = document.getElementById("searchInput");
-const suggestions = document.getElementById("suggestions");
-const protocolContainer = document.getElementById("protocolContainer");
+function App(){
 
-input.addEventListener("input", () => {
+const [busca,setBusca] = React.useState("");
+const [peso,setPeso] = React.useState("");
+const [idade,setIdade] = React.useState("");
+const [selecionado,setSelecionado] = React.useState(null);
+const [resultado,setResultado] = React.useState(null);
 
-    const value = input.value.toLowerCase();
+const sugestoes = medicamentos.filter(m =>
+m.nome.toLowerCase().includes(busca.toLowerCase())
+);
 
-    suggestions.innerHTML = "";
+function selecionarMedicamento(med){
+setSelecionado(med);
+setBusca(med.nome);
+}
 
-    if(value.length === 0){
-        protocolContainer.innerHTML = "";
-        return;
-    }
+function calcular(){
 
-    const results = database.filter(item =>
-        item.nome.toLowerCase().includes(value) ||
-        item.aliases.some(a => a.includes(value))
-    );
+if(!selecionado || !peso) return;
 
-    results.forEach(item => {
+const dose = peso * selecionado.doseMgKg;
 
-        const div = document.createElement("div");
+const volume = dose / selecionado.concentracao;
 
-        div.className =
-        "search-item p-4 border-b cursor-pointer";
-
-        div.innerHTML = `
-            <strong>${item.nome}</strong>
-            <br>
-            <span class="text-sm text-gray-500">
-            ${item.categoria}
-            </span>
-        `;
-
-        div.onclick = () => {
-            renderProtocol(item);
-            suggestions.innerHTML = "";
-            input.value = item.nome;
-        };
-
-        suggestions.appendChild(div);
-
-    });
-
+setResultado({
+dose:dose.toFixed(2),
+volume:volume.toFixed(2)
 });
 
-function renderProtocol(item){
-
-    let calculatorHTML = "";
-
-    if(item.calculadora.tipo === "simples"){
-
-        calculatorHTML = `
-        <div class="mt-4">
-
-            <label class="font-bold">
-            PESO (kg)
-            </label>
-
-            <input
-            id="peso"
-            type="number"
-            class="w-full border p-3 rounded-xl mt-2"
-            placeholder="Ex: 15"
-            />
-
-            <button
-            onclick="calcularDose('${item.id}')"
-            class="w-full bg-blue-700 text-white p-3 rounded-2xl mt-3 font-bold"
-            >
-            CALCULAR DOSE
-            </button>
-
-            <div
-            id="resultado"
-            class="mt-4 bg-blue-50 p-4 rounded-2xl hidden"
-            ></div>
-
-        </div>
-        `;
-    }
-
-    if(item.calculadora.tipo === "nac"){
-
-        calculatorHTML = `
-        <div class="mt-4">
-
-            <label class="font-bold">
-            PESO (kg)
-            </label>
-
-            <input
-            id="peso"
-            type="number"
-            class="w-full border p-3 rounded-xl mt-2"
-            placeholder="Ex: 15"
-            />
-
-            <button
-            onclick="calcularNAC()"
-            class="w-full bg-blue-700 text-white p-3 rounded-2xl mt-3 font-bold"
-            >
-            CALCULAR NAC
-            </button>
-
-            <div
-            id="resultado"
-            class="mt-4 bg-yellow-50 p-4 rounded-2xl hidden"
-            ></div>
-
-        </div>
-        `;
-    }
-
-    protocolContainer.innerHTML = `
-    <div class="card bg-white rounded-3xl shadow-xl p-5">
-
-        <div class="flex justify-between items-center">
-
-            <div>
-                <h2 class="text-2xl font-bold">
-                ${item.nome}
-                </h2>
-
-                <p class="text-blue-700 font-semibold mt-1">
-                ${item.antidoto}
-                </p>
-            </div>
-
-        </div>
-
-        <div class="mt-5">
-
-            <p>
-            <strong>DOSE:</strong>
-            ${item.dose}
-            </p>
-
-            <p class="mt-2">
-            <strong>CONCENTRAÇÃO:</strong>
-            ${item.concentracao}
-            </p>
-
-        </div>
-
-        ${calculatorHTML}
-
-        <div class="mt-6">
-
-            <h3 class="font-bold text-red-600 text-lg">
-            🚨 RED FLAGS
-            </h3>
-
-            <ul class="mt-3 space-y-2">
-            ${
-                item.redFlags.map(r =>
-                    `<li class="bg-red-50 p-3 rounded-xl">${r}</li>`
-                ).join("")
-            }
-            </ul>
-
-        </div>
-
-        <div class="mt-6">
-
-            <h3 class="font-bold text-blue-700 text-lg">
-            📋 PROTOCOLO
-            </h3>
-
-            <ul class="mt-3 space-y-2">
-            ${
-                item.protocolo.map(p =>
-                    `<li class="bg-blue-50 p-3 rounded-xl">${p}</li>`
-                ).join("")
-            }
-            </ul>
-
-        </div>
-
-    </div>
-    `;
 }
 
-function calcularDose(id){
+return(
 
-    const peso = parseFloat(document.getElementById("peso").value);
+<div className="max-w-xl mx-auto p-4">
 
-    const med = database.find(m => m.id === id);
+<div className="card">
 
-    const mg = peso * med.calculadora.mgKg;
+<div className="title">
+DosePed
+</div>
 
-    const ml = mg / med.calculadora.concentracao;
+<div className="subtitle">
+Calculadora pediátrica profissional
+</div>
 
-    const resultado = document.getElementById("resultado");
+<input
+placeholder="🔎 Pesquisa rápida..."
+value={busca}
+onChange={(e)=>{
+setBusca(e.target.value);
+setSelecionado(null);
+}}
+/>
 
-    resultado.classList.remove("hidden");
+{
+busca.length > 0 &&
+!selecionado &&
 
-    resultado.innerHTML = `
-        <h3 class="font-bold text-lg">
-        RESULTADO AUTOMÁTICO
-        </h3>
+<div className="mt-2 rounded-xl overflow-hidden border">
 
-        <div class="mt-3 space-y-2">
-
-            <div class="bg-white p-3 rounded-xl">
-                <strong>DOSE:</strong>
-                ${mg.toFixed(2)} mg
-            </div>
-
-            <div class="bg-white p-3 rounded-xl">
-                <strong>VOLUME:</strong>
-                ${ml.toFixed(2)} mL
-            </div>
-
-        </div>
-    `;
+{
+sugestoes.map((m,index)=>(
+<div
+key={index}
+className="suggestion"
+onClick={()=>selecionarMedicamento(m)}
+>
+<b>{m.nome}</b>
+<br/>
+<span style={{fontSize:"13px"}}>
+{m.categoria}
+</span>
+</div>
+))
 }
 
-function calcularNAC(){
-
-    const peso = parseFloat(document.getElementById("peso").value);
-
-    const resultado = document.getElementById("resultado");
-
-    const bolsa1 = peso * 150;
-    const bolsa2 = peso * 50;
-    const bolsa3 = peso * 100;
-
-    resultado.classList.remove("hidden");
-
-    resultado.innerHTML = `
-    <h3 class="font-bold text-lg">
-    PROTOCOLO NAC 21H
-    </h3>
-
-    <div class="mt-4 space-y-3">
-
-        <div class="bg-white p-3 rounded-xl">
-            <strong>Bolsa 1:</strong>
-            ${bolsa1.toFixed(0)} mg
-        </div>
-
-        <div class="bg-white p-3 rounded-xl">
-            <strong>Bolsa 2:</strong>
-            ${bolsa2.toFixed(0)} mg
-        </div>
-
-        <div class="bg-white p-3 rounded-xl">
-            <strong>Bolsa 3:</strong>
-            ${bolsa3.toFixed(0)} mg
-        </div>
-
-    </div>
-    `;
+</div>
 }
+
+{
+selecionado &&
+
+<div className="card">
+
+<h1 style={{fontSize:"28px",fontWeight:"bold"}}>
+{selecionado.nome}
+</h1>
+
+<div style={{color:"#2563eb",fontWeight:"bold"}}>
+{selecionado.categoria}
+</div>
+
+<div className="section-title">
+INDICAÇÃO
+</div>
+
+<div>
+{selecionado.indicacao}
+</div>
+
+<div className="section-title">
+APRESENTAÇÃO
+</div>
+
+<div>
+{selecionado.apresentacao}
+</div>
+
+<input
+type="number"
+placeholder="PESO (kg)"
+value={peso}
+onChange={(e)=>setPeso(e.target.value)}
+/>
+
+<input
+placeholder="IDADE (anos ou meses)"
+value={idade}
+onChange={(e)=>setIdade(e.target.value)}
+/>
+
+<button onClick={calcular}>
+CALCULAR DOSE
+</button>
+
+{
+resultado &&
+
+<div className="result">
+
+<div>
+<b>DOSE CALCULADA:</b>
+<br/>
+{resultado.dose} mg
+</div>
+
+<br/>
+
+<div>
+<b>VOLUME:</b>
+<br/>
+{resultado.volume} mL
+</div>
+
+<br/>
+
+<div>
+<b>ADMINISTRAÇÃO:</b>
+<br/>
+{selecionado.administracao}
+</div>
+
+<br/>
+
+<div>
+<b>REPETIÇÃO:</b>
+<br/>
+{selecionado.repeticao}
+</div>
+
+<br/>
+
+<div>
+<b>DOSE MÁXIMA:</b>
+<br/>
+{selecionado.doseMaxima}
+</div>
+
+<br/>
+
+<div>
+<b>DILUIÇÃO:</b>
+<br/>
+{selecionado.diluicao}
+</div>
+
+</div>
+}
+
+<div className="section-title">
+🚨 RED FLAGS
+</div>
+
+{
+selecionado.redFlags.map((r,index)=>(
+<div key={index} className="redflag">
+{r}
+</div>
+))
+}
+
+</div>
+}
+
+</div>
+
+</div>
+
+)
+
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>)
 
 </script>
 
