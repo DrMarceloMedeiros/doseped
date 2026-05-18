@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>DosePed</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
 <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
@@ -16,6 +22,8 @@
 body{
 background:#edf6ff;
 font-family:Arial;
+margin:0;
+padding:0;
 }
 
 .card{
@@ -33,6 +41,7 @@ border-radius:14px;
 border:1px solid #d1d5db;
 margin-top:10px;
 font-size:16px;
+box-sizing:border-box;
 }
 
 button{
@@ -45,6 +54,11 @@ border-radius:14px;
 margin-top:15px;
 font-weight:bold;
 font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
 }
 
 .title{
@@ -109,20 +123,30 @@ const medicamentos = [
 
 {
 nome:"Flumazenil",
+
 categoria:"Antagonista benzodiazepínico",
+
 indicacao:"Intoxicação por benzodiazepínicos",
 
 formulacoes:[
 
 {
 nome:"Ampola EV",
+
 via:"EV",
+
 concentracao:0.1,
+
 doseMgKg:0.01,
+
 administracao:"Endovenoso lento em 15 segundos",
-repeticao:"Repetir a cada 60 segundos",
+
+repeticao:"Pode repetir a cada 60 segundos",
+
 doseMaxima:"1 mg total",
+
 apresentacao:"Ampola 5 mL — 0,1 mg/mL",
+
 diluicao:"Sem necessidade de diluição"
 }
 
@@ -138,32 +162,52 @@ redFlags:[
 
 {
 nome:"Dipirona",
+
 categoria:"Analgésico e antitérmico",
+
 indicacao:"Dor e febre",
 
 formulacoes:[
 
 {
 nome:"Gotas VO",
+
 via:"VO",
+
 concentracao:500,
+
+gotasPorMl:20,
+
 doseMgKg:15,
+
 administracao:"Via oral",
+
 repeticao:"A cada 6 horas",
+
 doseMaxima:"1 g por dose",
+
 apresentacao:"500 mg/mL — frasco gotas",
+
 diluicao:"Sem necessidade"
 },
 
 {
 nome:"Ampola EV",
+
 via:"EV",
+
 concentracao:500,
+
 doseMgKg:15,
+
 administracao:"EV lento",
+
 repeticao:"A cada 6 horas",
+
 doseMaxima:"1 g por dose",
+
 apresentacao:"1 g/2 mL",
+
 diluicao:"Diluir em SF 0,9%"
 }
 
@@ -182,8 +226,11 @@ redFlags:[
 function App(){
 
 const [busca,setBusca] = React.useState("");
+
 const [peso,setPeso] = React.useState("");
+
 const [idade,setIdade] = React.useState("");
+
 const [idadeTipo,setIdadeTipo] = React.useState("");
 
 const [selecionado,setSelecionado] = React.useState(null);
@@ -225,13 +272,26 @@ alert("Selecione meses ou anos");
 return;
 }
 
-const dose = peso * formulacao.doseMgKg;
+const pesoFloat = parseFloat(peso);
+
+const dose = pesoFloat * formulacao.doseMgKg;
 
 const volume = dose / formulacao.concentracao;
 
+let gotas = null;
+
+if(formulacao.gotasPorMl){
+
+gotas = Math.round(
+volume * formulacao.gotasPorMl
+);
+
+}
+
 setResultado({
 dose:dose.toFixed(2),
-volume:volume.toFixed(2)
+volume:volume.toFixed(2),
+gotas
 });
 
 }
@@ -251,12 +311,19 @@ Calculadora pediátrica profissional
 </div>
 
 <input
+
 placeholder="🔎 Pesquisa rápida..."
+
 value={busca}
+
 onChange={(e)=>{
+
 setBusca(e.target.value);
+
 setSelecionado(null);
+
 }}
+
 />
 
 {
@@ -269,9 +336,13 @@ busca.length > 0 &&
 sugestoes.map((m,index)=>(
 
 <div
+
 key={index}
+
 className="suggestion"
+
 onClick={()=>selecionarMedicamento(m)}
+
 >
 
 <b>{m.nome}</b>
@@ -291,11 +362,14 @@ onClick={()=>selecionarMedicamento(m)}
 }
 
 {
-selecionado &&
+selecionado && formulacao &&
 
 <div className="card">
 
-<h1 style={{fontSize:"30px",fontWeight:"bold"}}>
+<h1 style={{
+fontSize:"30px",
+fontWeight:"bold"
+}}>
 {selecionado.nome}
 </h1>
 
@@ -326,6 +400,9 @@ FORMULAÇÃO
 </div>
 
 <select
+
+value={formulacao.nome}
+
 onChange={(e)=>{
 
 const f = selecionado.formulacoes.find(
@@ -335,13 +412,16 @@ x => x.nome === e.target.value
 setFormulacao(f);
 
 }}
+
 >
 
 {
 selecionado.formulacoes.map((f,index)=>(
+
 <option key={index}>
 {f.nome}
 </option>
+
 ))
 }
 
@@ -362,22 +442,35 @@ APRESENTAÇÃO
 </div>
 
 <input
+
 type="number"
+
 placeholder="Peso do paciente (kg)"
+
 value={peso}
+
 onChange={(e)=>setPeso(e.target.value)}
+
 />
 
 <input
+
 type="number"
+
 placeholder="Idade do paciente"
+
 value={idade}
+
 onChange={(e)=>setIdade(e.target.value)}
+
 />
 
 <select
+
 value={idadeTipo}
+
 onChange={(e)=>setIdadeTipo(e.target.value)}
+
 >
 
 <option value="">
@@ -404,57 +497,106 @@ resultado &&
 <div className="result">
 
 <div>
+
 <b>DOSE CALCULADA</b>
+
 <br/>
+
 {resultado.dose} mg
+
 </div>
 
 <br/>
 
 <div>
+
 <b>VOLUME</b>
+
 <br/>
+
 {resultado.volume} mL
+
 </div>
+
+{
+resultado.gotas &&
+
+<>
 
 <br/>
 
 <div>
+
+<b>GOTAS</b>
+
+<br/>
+
+{resultado.gotas} gotas
+
+</div>
+
+</>
+
+}
+
+<br/>
+
+<div>
+
 <b>VIA</b>
+
 <br/>
+
 {formulacao.via}
+
 </div>
 
 <br/>
 
 <div>
+
 <b>ADMINISTRAÇÃO</b>
+
 <br/>
+
 {formulacao.administracao}
+
 </div>
 
 <br/>
 
 <div>
+
 <b>REPETIÇÃO</b>
+
 <br/>
+
 {formulacao.repeticao}
+
 </div>
 
 <br/>
 
 <div>
+
 <b>DOSE MÁXIMA</b>
+
 <br/>
+
 {formulacao.doseMaxima}
+
 </div>
 
 <br/>
 
 <div>
+
 <b>DILUIÇÃO</b>
+
 <br/>
+
 {formulacao.diluicao}
+
 </div>
 
 </div>
@@ -473,7 +615,9 @@ selecionado.redFlags.map((r,index)=>(
 key={index}
 className="redflag"
 >
+
 {r}
+
 </div>
 
 ))
@@ -492,7 +636,9 @@ className="redflag"
 
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>)
+ReactDOM.createRoot(
+document.getElementById("root")
+).render(<App/>)
 
 </script>
 
