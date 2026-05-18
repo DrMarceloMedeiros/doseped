@@ -161,11 +161,6 @@ font-weight:900;
 color:black;
 margin-top:30px;
 cursor:pointer;
-transition:0.2s;
-}
-
-.greenButton:hover{
-background:#16a34a;
 }
 
 .resultTop{
@@ -175,11 +170,10 @@ padding:22px;
 border-radius:18px;
 margin-top:25px;
 text-align:center;
-animation:fadeUp 0.25s ease;
 }
 
 .resultTopText{
-font-size:36px;
+font-size:38px;
 font-weight:900;
 }
 
@@ -205,6 +199,16 @@ font-size:14px;
 font-weight:bold;
 }
 
+.blueInfo{
+background:#dbeafe;
+padding:14px;
+border-radius:14px;
+margin-top:14px;
+color:#1e3a8a;
+font-size:14px;
+line-height:1.5;
+}
+
 .ageTypeContainer{
 display:flex;
 gap:10px;
@@ -220,7 +224,6 @@ font-weight:bold;
 cursor:pointer;
 background:white;
 color:#1e3a8a;
-transition:0.2s;
 }
 
 .ageButton.active{
@@ -261,7 +264,13 @@ concentracao:500,
 
 gotasPorMl:20,
 
-doseMgKg:15,
+doseMgKg:12.5,
+
+regraPratica:"≈ 0,5 gota por kg de peso",
+
+faixaDose:"10–15 mg/kg",
+
+maximo:"40 gotas (1.000 mg) por dose",
 
 administracao:"Via oral",
 
@@ -302,94 +311,12 @@ redFlags:[
 "Agranulocitose rara"
 ]
 
-},
-
-{
-nome:"Flumazenil",
-
-categoria:"Antagonista benzodiazepínico",
-
-indicacao:"Intoxicação por benzodiazepínicos",
-
-idadeMinimaMeses:0,
-
-formulacoes:[
-
-{
-nome:"Ampola EV",
-
-via:"EV",
-
-concentracao:0.1,
-
-doseMgKg:0.01,
-
-administracao:"EV lento em 15 segundos",
-
-repeticao:"Pode repetir a cada 60 segundos",
-
-doseMaxima:"1 mg total",
-
-apresentacao:"Ampola 5 mL — 0,1 mg/mL",
-
-diluicao:"Sem necessidade de diluição"
-}
-
-],
-
-redFlags:[
-"Uso crônico de benzodiazepínicos",
-"Convulsões",
-"Coingestão com antidepressivos tricíclicos"
-]
-
-},
-
-{
-nome:"Loratadina",
-
-categoria:"Antialérgico",
-
-indicacao:"Rinite alérgica e urticária",
-
-idadeMinimaMeses:24,
-
-formulacoes:[
-
-{
-nome:"Xarope VO",
-
-via:"VO",
-
-concentracao:1,
-
-doseMgKg:0.2,
-
-administracao:"Via oral",
-
-repeticao:"1x ao dia",
-
-doseMaxima:"10 mg/dia",
-
-apresentacao:"1 mg/mL",
-
-diluicao:"Sem necessidade"
-}
-
-],
-
-redFlags:[
-"Contraindicado abaixo de 2 anos sem avaliação médica"
-]
-
 }
 
 ];
 
 const atalhos = [
 "Dipirona",
-"Flumazenil",
-"Loratadina",
 "Dramin",
 "Dexametasona",
 "Hidrocortisona",
@@ -400,7 +327,6 @@ const atalhos = [
 const exemplos = [
 "Dipirona",
 "Epinefrina",
-"Metilprednisolona",
 "Hidrocortisona",
 "Metoclopramida"
 ];
@@ -539,9 +465,13 @@ let gotas = null;
 
 if(formulacao.gotasPorMl){
 
-gotas = Math.round(
-volume * formulacao.gotasPorMl
-);
+/*
+CORREÇÃO:
+0,5 gota/kg prática clínica
+10kg = 5 gotas
+*/
+
+gotas = Math.round(peso * 0.5);
 
 }
 
@@ -922,6 +852,26 @@ resultado.gotas
 {resultado.dose} mg
 
 </div>
+
+{
+formulacao.regraPratica &&
+
+<div className="blueInfo">
+
+<b>Dose:</b> {formulacao.doseMgKg} mg/kg/dose
+(faixa: {formulacao.faixaDose})
+
+<br/><br/>
+
+<b>Máximo:</b> {formulacao.maximo}
+
+<br/><br/>
+
+<b>Regra prática:</b> {formulacao.regraPratica}
+
+</div>
+
+}
 
 <div className="infoBox">
 
