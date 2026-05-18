@@ -19,6 +19,10 @@
 
 <style>
 
+html{
+scroll-behavior:smooth;
+}
+
 body{
 margin:0;
 padding:0;
@@ -33,7 +37,7 @@ padding:18px;
 }
 
 .logo{
-font-size:42px;
+font-size:46px;
 font-weight:900;
 color:#2563eb;
 margin-top:10px;
@@ -55,7 +59,7 @@ box-shadow:0 4px 15px rgba(0,0,0,0.08);
 
 .searchInput{
 width:100%;
-padding:16px;
+padding:18px;
 border-radius:16px;
 border:1px solid #dbeafe;
 font-size:18px;
@@ -68,6 +72,7 @@ font-weight:bold;
 margin-top:20px;
 margin-bottom:12px;
 color:#1e3a8a;
+font-size:18px;
 }
 
 .quickButton{
@@ -79,16 +84,19 @@ font-weight:bold;
 cursor:pointer;
 box-shadow:0 3px 10px rgba(0,0,0,0.05);
 border:1px solid #dbeafe;
+transition:0.2s;
 }
 
 .quickButton:hover{
 background:#dbeafe;
+transform:scale(1.01);
 }
 
 .suggestion{
 padding:15px;
 border-bottom:1px solid #eee;
 cursor:pointer;
+transition:0.2s;
 }
 
 .suggestion:hover{
@@ -101,6 +109,18 @@ padding:20px;
 border-radius:22px;
 margin-top:20px;
 box-shadow:0 4px 15px rgba(0,0,0,0.08);
+animation:fadeUp 0.3s ease;
+}
+
+@keyframes fadeUp{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+to{
+opacity:1;
+transform:translateY(0px);
+}
 }
 
 .medTitle{
@@ -120,6 +140,7 @@ font-weight:bold;
 color:#1d4ed8;
 margin-top:18px;
 margin-bottom:7px;
+font-size:15px;
 }
 
 .select{
@@ -133,32 +154,35 @@ margin-top:8px;
 
 .greenButton{
 width:100%;
-padding:18px;
+padding:20px;
 border:none;
 background:#22c55e;
 border-radius:18px;
-font-size:19px;
+font-size:20px;
 font-weight:900;
 color:black;
 margin-top:30px;
 cursor:pointer;
+transition:0.2s;
 }
 
 .greenButton:hover{
 background:#16a34a;
+transform:scale(1.01);
 }
 
 .resultTop{
 background:#2563eb;
 color:white;
-padding:20px;
+padding:22px;
 border-radius:18px;
 margin-top:25px;
 text-align:center;
+animation:fadeUp 0.3s ease;
 }
 
 .resultTopText{
-font-size:34px;
+font-size:36px;
 font-weight:900;
 }
 
@@ -198,6 +222,7 @@ font-weight:bold;
 cursor:pointer;
 background:#dbeafe;
 color:#1e3a8a;
+transition:0.2s;
 }
 
 .ageButton.active{
@@ -330,43 +355,65 @@ const atalhos = [
 "Diazepam"
 ];
 
+const exemplos = [
+"Dipirona",
+"Epinefrina",
+"Metilprednisolona",
+"Hidrocortisona",
+"Metoclopramida"
+];
+
 function App(){
 
 const [textoAnimado,setTextoAnimado] = React.useState("");
 
-const frase = "Dipirona";
-
 React.useEffect(()=>{
 
-let i = 0;
+let fraseIndex = 0;
+
+let letraIndex = 0;
 
 let apagando = false;
 
 const interval = setInterval(()=>{
 
+const fraseAtual = exemplos[fraseIndex];
+
 if(!apagando){
 
-setTextoAnimado(frase.substring(0,i+1));
+setTextoAnimado(
+fraseAtual.substring(0, letraIndex + 1)
+);
 
-i++;
+letraIndex++;
 
-if(i === frase.length){
+if(letraIndex === fraseAtual.length){
 apagando = true;
 }
 
 }else{
 
-setTextoAnimado(frase.substring(0,i-1));
+setTextoAnimado(
+fraseAtual.substring(0, letraIndex - 1)
+);
 
-i--;
+letraIndex--;
 
-if(i === 0){
+if(letraIndex === 0){
+
 apagando = false;
+
+fraseIndex++;
+
+if(fraseIndex >= exemplos.length){
+fraseIndex = 0;
 }
 
 }
 
-},180);
+}
+
+},120);
 
 return ()=>clearInterval(interval);
 
@@ -386,6 +433,10 @@ const [idadeTipo,setIdadeTipo] = React.useState("anos");
 
 const [resultado,setResultado] = React.useState(null);
 
+const cardRef = React.useRef(null);
+
+const resultRef = React.useRef(null);
+
 const sugestoes = medicamentos.filter(m =>
 m.nome.toLowerCase().includes(busca.toLowerCase())
 );
@@ -399,6 +450,15 @@ setBusca(med.nome);
 setFormulacao(med.formulacoes[0]);
 
 setResultado(null);
+
+setTimeout(()=>{
+
+cardRef.current?.scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+},200);
 
 }
 
@@ -423,6 +483,15 @@ dose:dose.toFixed(2),
 volume:volume.toFixed(2),
 gotas
 });
+
+setTimeout(()=>{
+
+resultRef.current?.scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+},200);
 
 }
 
@@ -453,6 +522,23 @@ onChange={(e)=>{
 setBusca(e.target.value);
 
 setSelecionado(null);
+
+}}
+
+onKeyDown={(e)=>{
+
+if(e.key === "Enter"){
+
+const med = medicamentos.find(
+m =>
+m.nome.toLowerCase() === busca.toLowerCase()
+);
+
+if(med){
+selecionarMedicamento(med);
+}
+
+}
 
 }}
 
@@ -495,6 +581,11 @@ onClick={()=>selecionarMedicamento(m)}
 
 </div>
 
+{
+!selecionado &&
+
+<>
+
 <div className="quickTitle">
 ⚡ Mais usados na urgência
 </div>
@@ -531,10 +622,17 @@ selecionarMedicamento(med);
 ))
 }
 
+</>
+
+}
+
 {
 selecionado && formulacao &&
 
-<div className="card">
+<div
+className="card"
+ref={cardRef}
+>
 
 <div className="medTitle">
 {selecionado.nome}
@@ -612,7 +710,7 @@ onChange={(e)=>setPeso(Number(e.target.value))}
 Array.from({length:40},(_,i)=>i+1).map(num=>(
 
 <option key={num}>
-{num}
+{num} kg
 </option>
 
 ))
@@ -699,7 +797,10 @@ resultado &&
 
 <>
 
-<div className="resultTop">
+<div
+className="resultTop"
+ref={resultRef}
+>
 
 <div className="resultTopText">
 
