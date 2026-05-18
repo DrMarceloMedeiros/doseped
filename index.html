@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>DosePed</title>
 
@@ -12,84 +12,91 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
+
 body{
-background:#eef6ff;
+background:#edf6ff;
 font-family:Arial;
 }
 
 .card{
 background:white;
-border-radius:20px;
 padding:20px;
-box-shadow:0 4px 15px rgba(0,0,0,0.08);
+border-radius:22px;
 margin-top:15px;
+box-shadow:0 4px 15px rgba(0,0,0,0.08);
 }
 
-input{
+input,select{
 width:100%;
 padding:14px;
 border-radius:14px;
-border:1px solid #cbd5e1;
+border:1px solid #d1d5db;
 margin-top:10px;
 font-size:16px;
 }
 
 button{
+width:100%;
 background:#2563eb;
 color:white;
-padding:14px;
+padding:15px;
+border:none;
 border-radius:14px;
-width:100%;
-font-weight:bold;
 margin-top:15px;
-}
-
-.suggestion{
-padding:12px;
-background:white;
-border-bottom:1px solid #eee;
-cursor:pointer;
-}
-
-.suggestion:hover{
-background:#dbeafe;
+font-weight:bold;
+font-size:16px;
 }
 
 .title{
-font-size:32px;
+font-size:34px;
 font-weight:bold;
 color:#1e3a8a;
 }
 
 .subtitle{
 color:#64748b;
-font-size:14px;
 margin-top:-5px;
 }
 
-.section-title{
+.suggestion{
+padding:14px;
+border-bottom:1px solid #eee;
+cursor:pointer;
+background:white;
+}
+
+.suggestion:hover{
+background:#dbeafe;
+}
+
+.section{
+margin-top:16px;
+}
+
+.label{
 font-weight:bold;
-color:#1e40af;
-margin-top:14px;
-font-size:15px;
+color:#1d4ed8;
+margin-bottom:5px;
 }
 
 .result{
 background:#dbeafe;
-padding:15px;
-border-radius:14px;
+padding:16px;
+border-radius:16px;
 margin-top:15px;
 }
 
 .redflag{
 background:#fee2e2;
 padding:10px;
-border-radius:10px;
+border-radius:12px;
 margin-top:10px;
 color:#991b1b;
 font-size:14px;
 }
+
 </style>
+
 </head>
 
 <body>
@@ -104,36 +111,70 @@ const medicamentos = [
 nome:"Flumazenil",
 categoria:"Antagonista benzodiazepínico",
 indicacao:"Intoxicação por benzodiazepínicos",
-doseMgKg:0.01,
+
+formulacoes:[
+
+{
+nome:"Ampola EV",
+via:"EV",
 concentracao:0.1,
-administracao:"EV lento em 15 segundos",
-repeticao:"Pode repetir a cada 60 segundos",
+doseMgKg:0.01,
+administracao:"Endovenoso lento em 15 segundos",
+repeticao:"Repetir a cada 60 segundos",
 doseMaxima:"1 mg total",
-diluicao:"Sem necessidade de diluição",
 apresentacao:"Ampola 5 mL — 0,1 mg/mL",
+diluicao:"Sem necessidade de diluição"
+}
+
+],
+
 redFlags:[
 "Uso crônico de benzodiazepínicos",
 "Convulsões",
 "Coingestão com antidepressivos tricíclicos"
 ]
+
 },
 
 {
-nome:"Naloxona",
-categoria:"Antagonista opioide",
-indicacao:"Intoxicação por opioides",
-doseMgKg:0.01,
-concentracao:0.4,
+nome:"Dipirona",
+categoria:"Analgésico e antitérmico",
+indicacao:"Dor e febre",
+
+formulacoes:[
+
+{
+nome:"Gotas VO",
+via:"VO",
+concentracao:500,
+doseMgKg:15,
+administracao:"Via oral",
+repeticao:"A cada 6 horas",
+doseMaxima:"1 g por dose",
+apresentacao:"500 mg/mL — frasco gotas",
+diluicao:"Sem necessidade"
+},
+
+{
+nome:"Ampola EV",
+via:"EV",
+concentracao:500,
+doseMgKg:15,
 administracao:"EV lento",
-repeticao:"Repetir a cada 2-3 minutos",
-doseMaxima:"2 mg por dose",
-diluicao:"Sem necessidade",
-apresentacao:"Ampola 1 mL — 0,4 mg/mL",
+repeticao:"A cada 6 horas",
+doseMaxima:"1 g por dose",
+apresentacao:"1 g/2 mL",
+diluicao:"Diluir em SF 0,9%"
+}
+
+],
+
 redFlags:[
-"Recidiva respiratória",
-"Opioides longa duração",
-"Abstinência aguda"
+"Hipotensão se EV rápido",
+"Alergia a pirazolônicos",
+"Agranulocitose rara"
 ]
+
 }
 
 ];
@@ -143,7 +184,12 @@ function App(){
 const [busca,setBusca] = React.useState("");
 const [peso,setPeso] = React.useState("");
 const [idade,setIdade] = React.useState("");
+const [idadeTipo,setIdadeTipo] = React.useState("");
+
 const [selecionado,setSelecionado] = React.useState(null);
+
+const [formulacao,setFormulacao] = React.useState(null);
+
 const [resultado,setResultado] = React.useState(null);
 
 const sugestoes = medicamentos.filter(m =>
@@ -151,17 +197,37 @@ m.nome.toLowerCase().includes(busca.toLowerCase())
 );
 
 function selecionarMedicamento(med){
+
 setSelecionado(med);
+
 setBusca(med.nome);
+
+setFormulacao(med.formulacoes[0]);
+
+setResultado(null);
+
 }
 
 function calcular(){
 
-if(!selecionado || !peso) return;
+if(!peso){
+alert("Digite o peso");
+return;
+}
 
-const dose = peso * selecionado.doseMgKg;
+if(!idade){
+alert("Digite a idade");
+return;
+}
 
-const volume = dose / selecionado.concentracao;
+if(!idadeTipo){
+alert("Selecione meses ou anos");
+return;
+}
+
+const dose = peso * formulacao.doseMgKg;
+
+const volume = dose / formulacao.concentracao;
 
 setResultado({
 dose:dose.toFixed(2),
@@ -197,21 +263,27 @@ setSelecionado(null);
 busca.length > 0 &&
 !selecionado &&
 
-<div className="mt-2 rounded-xl overflow-hidden border">
+<div className="mt-2 border rounded-xl overflow-hidden">
 
 {
 sugestoes.map((m,index)=>(
+
 <div
 key={index}
 className="suggestion"
 onClick={()=>selecionarMedicamento(m)}
 >
+
 <b>{m.nome}</b>
+
 <br/>
+
 <span style={{fontSize:"13px"}}>
 {m.categoria}
 </span>
+
 </div>
+
 ))
 }
 
@@ -223,15 +295,21 @@ selecionado &&
 
 <div className="card">
 
-<h1 style={{fontSize:"28px",fontWeight:"bold"}}>
+<h1 style={{fontSize:"30px",fontWeight:"bold"}}>
 {selecionado.nome}
 </h1>
 
-<div style={{color:"#2563eb",fontWeight:"bold"}}>
+<div style={{
+color:"#2563eb",
+fontWeight:"bold",
+marginTop:"5px"
+}}>
 {selecionado.categoria}
 </div>
 
-<div className="section-title">
+<div className="section">
+
+<div className="label">
 INDICAÇÃO
 </div>
 
@@ -239,26 +317,82 @@ INDICAÇÃO
 {selecionado.indicacao}
 </div>
 
-<div className="section-title">
+</div>
+
+<div className="section">
+
+<div className="label">
+FORMULAÇÃO
+</div>
+
+<select
+onChange={(e)=>{
+
+const f = selecionado.formulacoes.find(
+x => x.nome === e.target.value
+);
+
+setFormulacao(f);
+
+}}
+>
+
+{
+selecionado.formulacoes.map((f,index)=>(
+<option key={index}>
+{f.nome}
+</option>
+))
+}
+
+</select>
+
+</div>
+
+<div className="section">
+
+<div className="label">
 APRESENTAÇÃO
 </div>
 
 <div>
-{selecionado.apresentacao}
+{formulacao.apresentacao}
+</div>
+
 </div>
 
 <input
 type="number"
-placeholder="PESO (kg)"
+placeholder="Peso do paciente (kg)"
 value={peso}
 onChange={(e)=>setPeso(e.target.value)}
 />
 
 <input
-placeholder="IDADE (anos ou meses)"
+type="number"
+placeholder="Idade do paciente"
 value={idade}
 onChange={(e)=>setIdade(e.target.value)}
 />
+
+<select
+value={idadeTipo}
+onChange={(e)=>setIdadeTipo(e.target.value)}
+>
+
+<option value="">
+Selecione idade
+</option>
+
+<option value="meses">
+Meses
+</option>
+
+<option value="anos">
+Anos
+</option>
+
+</select>
 
 <button onClick={calcular}>
 CALCULAR DOSE
@@ -270,7 +404,7 @@ resultado &&
 <div className="result">
 
 <div>
-<b>DOSE CALCULADA:</b>
+<b>DOSE CALCULADA</b>
 <br/>
 {resultado.dose} mg
 </div>
@@ -278,7 +412,7 @@ resultado &&
 <br/>
 
 <div>
-<b>VOLUME:</b>
+<b>VOLUME</b>
 <br/>
 {resultado.volume} mL
 </div>
@@ -286,49 +420,66 @@ resultado &&
 <br/>
 
 <div>
-<b>ADMINISTRAÇÃO:</b>
+<b>VIA</b>
 <br/>
-{selecionado.administracao}
+{formulacao.via}
 </div>
 
 <br/>
 
 <div>
-<b>REPETIÇÃO:</b>
+<b>ADMINISTRAÇÃO</b>
 <br/>
-{selecionado.repeticao}
+{formulacao.administracao}
 </div>
 
 <br/>
 
 <div>
-<b>DOSE MÁXIMA:</b>
+<b>REPETIÇÃO</b>
 <br/>
-{selecionado.doseMaxima}
+{formulacao.repeticao}
 </div>
 
 <br/>
 
 <div>
-<b>DILUIÇÃO:</b>
+<b>DOSE MÁXIMA</b>
 <br/>
-{selecionado.diluicao}
+{formulacao.doseMaxima}
+</div>
+
+<br/>
+
+<div>
+<b>DILUIÇÃO</b>
+<br/>
+{formulacao.diluicao}
 </div>
 
 </div>
 }
 
-<div className="section-title">
+<div className="section">
+
+<div className="label">
 🚨 RED FLAGS
 </div>
 
 {
 selecionado.redFlags.map((r,index)=>(
-<div key={index} className="redflag">
+
+<div
+key={index}
+className="redflag"
+>
 {r}
 </div>
+
 ))
 }
+
+</div>
 
 </div>
 }
