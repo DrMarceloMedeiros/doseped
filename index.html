@@ -3,8 +3,7 @@
 
 <head>
 
-<meta charset="UTF-8" />
-
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>DosePed</title>
@@ -12,9 +11,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
@@ -34,6 +31,7 @@ font-family:Arial, sans-serif;
 max-width:520px;
 margin:auto;
 padding:18px;
+padding-bottom:80px;
 }
 
 .logo{
@@ -89,7 +87,6 @@ transition:0.2s;
 
 .quickButton:hover{
 background:#dbeafe;
-transform:scale(1.01);
 }
 
 .suggestion{
@@ -109,7 +106,7 @@ padding:20px;
 border-radius:22px;
 margin-top:20px;
 box-shadow:0 4px 15px rgba(0,0,0,0.08);
-animation:fadeUp 0.3s ease;
+animation:fadeUp 0.25s ease;
 }
 
 @keyframes fadeUp{
@@ -150,6 +147,7 @@ border-radius:14px;
 border:1px solid #d1d5db;
 font-size:17px;
 margin-top:8px;
+background:white;
 }
 
 .greenButton{
@@ -168,7 +166,6 @@ transition:0.2s;
 
 .greenButton:hover{
 background:#16a34a;
-transform:scale(1.01);
 }
 
 .resultTop{
@@ -178,7 +175,7 @@ padding:22px;
 border-radius:18px;
 margin-top:25px;
 text-align:center;
-animation:fadeUp 0.3s ease;
+animation:fadeUp 0.25s ease;
 }
 
 .resultTopText{
@@ -205,6 +202,7 @@ border-radius:14px;
 margin-top:10px;
 color:#991b1b;
 font-size:14px;
+font-weight:bold;
 }
 
 .ageTypeContainer{
@@ -217,10 +215,10 @@ margin-top:15px;
 flex:1;
 padding:14px;
 border-radius:14px;
-border:none;
+border:2px solid #dbeafe;
 font-weight:bold;
 cursor:pointer;
-background:#dbeafe;
+background:white;
 color:#1e3a8a;
 transition:0.2s;
 }
@@ -228,6 +226,7 @@ transition:0.2s;
 .ageButton.active{
 background:#2563eb;
 color:white;
+border-color:#2563eb;
 }
 
 </style>
@@ -248,6 +247,8 @@ nome:"Dipirona",
 categoria:"Analgésico e antitérmico",
 
 indicacao:"Dor e febre",
+
+idadeMinimaMeses:0,
 
 formulacoes:[
 
@@ -310,6 +311,8 @@ categoria:"Antagonista benzodiazepínico",
 
 indicacao:"Intoxicação por benzodiazepínicos",
 
+idadeMinimaMeses:0,
+
 formulacoes:[
 
 {
@@ -321,7 +324,7 @@ concentracao:0.1,
 
 doseMgKg:0.01,
 
-administracao:"Endovenoso lento em 15 segundos",
+administracao:"EV lento em 15 segundos",
 
 repeticao:"Pode repetir a cada 60 segundos",
 
@@ -340,19 +343,58 @@ redFlags:[
 "Coingestão com antidepressivos tricíclicos"
 ]
 
+},
+
+{
+nome:"Loratadina",
+
+categoria:"Antialérgico",
+
+indicacao:"Rinite alérgica e urticária",
+
+idadeMinimaMeses:24,
+
+formulacoes:[
+
+{
+nome:"Xarope VO",
+
+via:"VO",
+
+concentracao:1,
+
+doseMgKg:0.2,
+
+administracao:"Via oral",
+
+repeticao:"1x ao dia",
+
+doseMaxima:"10 mg/dia",
+
+apresentacao:"1 mg/mL",
+
+diluicao:"Sem necessidade"
+}
+
+],
+
+redFlags:[
+"Contraindicado abaixo de 2 anos sem avaliação médica"
+]
+
 }
 
 ];
 
 const atalhos = [
 "Dipirona",
-"Plasil",
+"Flumazenil",
+"Loratadina",
 "Dramin",
 "Dexametasona",
 "Hidrocortisona",
 "Ondansetrona",
-"Adrenalina",
-"Diazepam"
+"Adrenalina"
 ];
 
 const exemplos = [
@@ -370,9 +412,7 @@ const [textoAnimado,setTextoAnimado] = React.useState("");
 React.useEffect(()=>{
 
 let fraseIndex = 0;
-
-let letraIndex = 0;
-
+let letra = 0;
 let apagando = false;
 
 const interval = setInterval(()=>{
@@ -382,24 +422,24 @@ const fraseAtual = exemplos[fraseIndex];
 if(!apagando){
 
 setTextoAnimado(
-fraseAtual.substring(0, letraIndex + 1)
+fraseAtual.substring(0, letra + 1)
 );
 
-letraIndex++;
+letra++;
 
-if(letraIndex === fraseAtual.length){
+if(letra === fraseAtual.length){
 apagando = true;
 }
 
 }else{
 
 setTextoAnimado(
-fraseAtual.substring(0, letraIndex - 1)
+fraseAtual.substring(0, letra - 1)
 );
 
-letraIndex--;
+letra--;
 
-if(letraIndex === 0){
+if(letra === 0){
 
 apagando = false;
 
@@ -425,21 +465,23 @@ const [selecionado,setSelecionado] = React.useState(null);
 
 const [formulacao,setFormulacao] = React.useState(null);
 
-const [peso,setPeso] = React.useState(10);
+const [peso,setPeso] = React.useState("");
 
-const [idade,setIdade] = React.useState(2);
+const [idade,setIdade] = React.useState("");
 
-const [idadeTipo,setIdadeTipo] = React.useState("anos");
+const [idadeTipo,setIdadeTipo] = React.useState("");
 
 const [resultado,setResultado] = React.useState(null);
 
-const cardRef = React.useRef(null);
-
-const resultRef = React.useRef(null);
+const [alerta,setAlerta] = React.useState("");
 
 const sugestoes = medicamentos.filter(m =>
 m.nome.toLowerCase().includes(busca.toLowerCase())
 );
+
+const cardRef = React.useRef(null);
+
+const resultRef = React.useRef(null);
 
 function selecionarMedicamento(med){
 
@@ -454,8 +496,7 @@ setResultado(null);
 setTimeout(()=>{
 
 cardRef.current?.scrollIntoView({
-behavior:"smooth",
-block:"start"
+behavior:"smooth"
 });
 
 },200);
@@ -463,6 +504,32 @@ block:"start"
 }
 
 function calcular(){
+
+if(!peso || !idade || !idadeTipo){
+
+alert("Preencha peso e idade");
+
+return;
+}
+
+const idadeMeses = idadeTipo === "anos"
+? idade * 12
+: idade;
+
+if(
+selecionado.idadeMinimaMeses &&
+idadeMeses < selecionado.idadeMinimaMeses
+){
+
+setAlerta(
+`Medicamento recomendado apenas acima de ${selecionado.idadeMinimaMeses} meses`
+);
+
+}else{
+
+setAlerta("");
+
+}
 
 const dose = peso * formulacao.doseMgKg;
 
@@ -487,11 +554,10 @@ gotas
 setTimeout(()=>{
 
 resultRef.current?.scrollIntoView({
-behavior:"smooth",
-block:"start"
+behavior:"smooth"
 });
 
-},200);
+},250);
 
 }
 
@@ -601,8 +667,6 @@ className="quickButton"
 
 onClick={()=>{
 
-setBusca(item);
-
 const med = medicamentos.find(
 m => m.nome === item
 );
@@ -675,8 +739,13 @@ setFormulacao(f);
 {
 selecionado.formulacoes.map((f,index)=>(
 
-<option key={index}>
+<option
+key={index}
+value={f.nome}
+>
+
 {f.nome}
+
 </option>
 
 ))
@@ -693,7 +762,7 @@ APRESENTAÇÃO
 </div>
 
 <div className="label">
-PESO
+PESO DO PACIENTE
 </div>
 
 <select
@@ -706,11 +775,20 @@ onChange={(e)=>setPeso(Number(e.target.value))}
 
 >
 
-{
-Array.from({length:40},(_,i)=>i+1).map(num=>(
+<option value="">
+Selecione o peso
+</option>
 
-<option key={num}>
+{
+Array.from({length:80},(_,i)=>i+1).map(num=>(
+
+<option
+key={num}
+value={num}
+>
+
 {num} kg
+
 </option>
 
 ))
@@ -732,11 +810,20 @@ onChange={(e)=>setIdade(Number(e.target.value))}
 
 >
 
-{
-Array.from({length:18},(_,i)=>i+1).map(num=>(
+<option value="">
+Selecione a idade
+</option>
 
-<option key={num}>
+{
+Array.from({length:24},(_,i)=>i+1).map(num=>(
+
+<option
+key={num}
+value={num}
+>
+
 {num}
+
 </option>
 
 ))
@@ -748,13 +835,17 @@ Array.from({length:18},(_,i)=>i+1).map(num=>(
 
 <button
 
+type="button"
+
 className={
 idadeTipo === "meses"
 ? "ageButton active"
 : "ageButton"
 }
 
-onClick={()=>setIdadeTipo("meses")}
+onClick={()=>{
+setIdadeTipo("meses");
+}}
 
 >
 
@@ -764,13 +855,17 @@ MESES
 
 <button
 
+type="button"
+
 className={
 idadeTipo === "anos"
 ? "ageButton active"
 : "ageButton"
 }
 
-onClick={()=>setIdadeTipo("anos")}
+onClick={()=>{
+setIdadeTipo("anos");
+}}
 
 >
 
@@ -868,6 +963,15 @@ resultado.gotas
 
 </div>
 
+{
+alerta &&
+
+<div className="redFlag">
+🚨 {alerta}
+</div>
+
+}
+
 <div className="label">
 🚨 RED FLAGS
 </div>
@@ -896,13 +1000,13 @@ className="redFlag"
 
 </div>
 
-)
+);
 
 }
 
 ReactDOM.createRoot(
 document.getElementById("root")
-).render(<App/>)
+).render(<App/>);
 
 </script>
 
